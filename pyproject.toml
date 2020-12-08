@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "air_collect"
 version = "0.1.0"
-description = "Local barometric pressure collector using the DarkSky API"
+description = "Local barometric pressure data collector using the DarkSky API"
 authors = ["roboto84 <7658704+roboto84@users.noreply.github.com>"]
 license = "GPL-3.0-or-later"
 
