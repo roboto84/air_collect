@@ -14,11 +14,11 @@ from bin.AirSettings import File_Settings
 
 
 class AirCollect:
-    HOME_PATH = ntpath.dirname(__file__)
-    logging.config.fileConfig(fname=os.path.join(HOME_PATH, 'bin/logging.conf'), disable_existing_loggers=False)
 
-    def __init__(self, api_key, location_lat_long, query_interval, trim_interval, num_of_readings):
-        self.logger = logging.getLogger(type(self).__name__)
+    def __init__(self, logging_object, home_path, api_key, location_lat_long, query_interval, trim_interval,
+                 num_of_readings):
+        self.home_path = home_path
+        self.logger = logging_object.getLogger(type(self).__name__)
         self.logger.setLevel(logging.INFO)
 
         self.live_data_file = self.get_full_file_path(File_Settings['live_data']['data_file'])
@@ -55,7 +55,7 @@ class AirCollect:
             return datetime.fromtimestamp(unix_time).strftime('%m/%d %H:%M')
 
     def get_full_file_path(self, relative_file_path):
-        return os.path.join(self.HOME_PATH, relative_file_path)
+        return os.path.join(self.home_path, relative_file_path)
 
     @staticmethod
     def transform_to_inhg_pressure(mbar_pressure):
@@ -75,8 +75,8 @@ class AirCollect:
                 diffData.write('%s,%s\n' % (diff, pos))
 
     @staticmethod
-    def write_live_data(logger, pressure, current_time, file_name):
-        logger.info(f'{pressure} inHg')
+    def write_live_data(obj_logger, pressure, current_time, file_name):
+        obj_logger.info(f'{pressure} inHg')
         with open(file_name, 'a') as liveData:
             liveData.write('%s,%s\n' % (pressure, current_time))
 
@@ -127,18 +127,29 @@ class AirCollect:
 
 
 if __name__ == '__main__':
-    load_dotenv()
-    DARK_SKY_API_KEY = os.getenv('DARK_SKY_API_KEY')
-    QUERY_API_INTERVAL = int(os.getenv('QUERY_API_INTERVAL'))
-    TRIM_DATA_INTERVAL = int(QUERY_API_INTERVAL / 3)
-    NUM_OF_LIVE_READINGS = int(os.getenv('NUM_OF_LIVE_READINGS'))
-    COORDINATES_LAT_LONG = os.getenv('COORDINATES_LAT_LONG')
+    HOME_PATH = ntpath.dirname(__file__)
+    logging.config.fileConfig(fname=os.path.join(HOME_PATH, 'bin/logging.conf'), disable_existing_loggers=False)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
 
-    print('\nBarometric data collector will run every {} seconds for coordinates {}:'.format(QUERY_API_INTERVAL,
-                                                                                             COORDINATES_LAT_LONG))
-    air_collect = AirCollect(DARK_SKY_API_KEY,
-                             COORDINATES_LAT_LONG,
-                             QUERY_API_INTERVAL,
-                             TRIM_DATA_INTERVAL,
-                             NUM_OF_LIVE_READINGS)
-    air_collect.run_metronome()
+    try:
+        load_dotenv()
+        DARK_SKY_API_KEY = os.getenv('DARK_SKY_API_KEY')
+        QUERY_API_INTERVAL = int(os.getenv('QUERY_API_INTERVAL'))
+        TRIM_DATA_INTERVAL = int(QUERY_API_INTERVAL / 3)
+        NUM_OF_LIVE_READINGS = int(os.getenv('NUM_OF_LIVE_READINGS'))
+        COORDINATES_LAT_LONG = os.getenv('COORDINATES_LAT_LONG')
+
+        print('\nBarometric data collector will run every {} seconds for coordinates {}:'.format(QUERY_API_INTERVAL,
+                                                                                                 COORDINATES_LAT_LONG))
+        air_collect = AirCollect(logging,
+                                 HOME_PATH,
+                                 DARK_SKY_API_KEY,
+                                 COORDINATES_LAT_LONG,
+                                 QUERY_API_INTERVAL,
+                                 TRIM_DATA_INTERVAL,
+                                 NUM_OF_LIVE_READINGS)
+        air_collect.run_metronome()
+    except TypeError:
+        logger.error('Process received a TypeError ... Check that the .env project file is configured correctly')
+        exit()
