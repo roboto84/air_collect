@@ -10,7 +10,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
-from bin.AirSettings import File_Settings
+from bin.air_settings import file_settings
 
 
 class AirCollect:
@@ -21,14 +21,14 @@ class AirCollect:
         self.logger = logging_object.getLogger(type(self).__name__)
         self.logger.setLevel(logging.INFO)
 
-        self.live_data_file = self.get_full_file_path(File_Settings['live_data']['data_file'])
-        self.next_48_hours_data_file = self.get_full_file_path(File_Settings['next_48_hours']['data_file'])
-        self.next_7_days_data_file = self.get_full_file_path(File_Settings['next_7_days']['data_file'])
+        self.live_data_file = self.get_full_file_path(file_settings['live_data']['data_file'])
+        self.next_48_hours_data_file = self.get_full_file_path(file_settings['next_48_hours']['data_file'])
+        self.next_7_days_data_file = self.get_full_file_path(file_settings['next_7_days']['data_file'])
 
-        self.live_data_diff_file = self.get_full_file_path(File_Settings['live_data']['diff_file'])
-        self.live_data_2nd_order_diff_file = self.get_full_file_path(File_Settings['live_data']['diff2_file'])
-        self.next_48_hours_data_diff_file = self.get_full_file_path(File_Settings['next_48_hours']['diff_file'])
-        self.next_7_days_data_diff_file = self.get_full_file_path(File_Settings['next_7_days']['diff_file'])
+        self.live_data_diff_file = self.get_full_file_path(file_settings['live_data']['diff_file'])
+        self.live_data_2nd_order_diff_file = self.get_full_file_path(file_settings['live_data']['diff2_file'])
+        self.next_48_hours_data_diff_file = self.get_full_file_path(file_settings['next_48_hours']['diff_file'])
+        self.next_7_days_data_diff_file = self.get_full_file_path(file_settings['next_7_days']['diff_file'])
 
         self.dark_sky_api_url = 'https://api.darksky.net/forecast/{}/{}'.format(api_key, location_lat_long)
         self.query_api_interval = query_interval
@@ -151,5 +151,5 @@ if __name__ == '__main__':
                                  NUM_OF_LIVE_READINGS)
         air_collect.run_metronome()
     except TypeError:
-        logger.error('Process received a TypeError ... Check that the .env project file is configured correctly')
+        logger.error('Received TypeError: Check that the .env project file is configured correctly')
         exit()

@@ -1,6 +1,6 @@
 #  Configuration for different plotting perspectives
 
-File_Settings = {
+file_settings = {
     'live_data': {
         'data_file': 'data/liveData.csv',
         'diff_file': 'data/differentials/liveDataDiff.csv',
