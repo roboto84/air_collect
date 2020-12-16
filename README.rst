@@ -1,5 +1,5 @@
 =================
-AirCollect
+air_collect
 =================
 
 A simple local barometric pressure measurement logger using the DarkSky API
@@ -24,20 +24,20 @@ Introduction
 ------------
 This project functions as part of the larger air project. This particular repository's purpose is:
 
-1. To collect the barometric pressure of a location using the DarkSky API (AirCollect.py).
-2. To generate differential information from the data collected (AirCollect.py).
+1. To collect the barometric pressure of a location using the DarkSky API (air_collect.py).
+2. To generate differential information from the data collected (air_collect.py).
 
 The differential data in this project is supplied in order to gain insight into how quickly certain time intervals are
 changing in barometric pressure which could be a point of interest.
 
-AirCollect.py
-~~~~~~~~~~~~~~~~~~~~~~
-AirCollect.py is named aptly as it is the process in charge of running continuously, polling the DarkSky API
+air_collect.py
+~~~~~~~~~~~~~~
+air_collect.py is named aptly as it is the process in charge of running continuously, polling the DarkSky API
 for barometric pressure measurements. It takes the measurements collected from the API requests outputting them out to
 the terminal, and aggregating them in the data folder as collection of CSVs. This process creates data files of
 live barometric pressure readings, along with data files for the next 48hrs, and the next 7 days barometric pressures.
 It also saves the differential processing of those data files in the differentials folder within the data folder.
-Differentials are taken for the live, 48hr, and 7 day data feeds. AirCollect.py requires that an ``.env`` file
+Differentials are taken for the live, 48hr, and 7 day data feeds. air_collect.py requires that an ``.env`` file
 is available in the *same* directory it is running under. The format of the .env file should contain ``DARK_SKY_API_KEY``,
 ``QUERY_API_INTERVAL``, ``NUM_OF_LIVE_READINGS``, and ``COORDINATES_LAT_LONG`` as defined environment values.
 
@@ -62,7 +62,11 @@ A typical ``.env`` file may look like this::
 
 To run the script once the environment (.env) file is created, from within the air_collect directory, simply type::
 
-    poetry run python air_collect/AirCollect.py
+    poetry run python air_collect/air_collect.py
+
+Logs
+-----
+Process logs are generated in the project's root directory's log folder.
 
 Commit Conventions
 ----------------------
