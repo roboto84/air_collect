@@ -2,7 +2,6 @@
 
 import requests
 import json
-import ntpath
 import os
 import sys
 import logging.config
@@ -17,9 +16,8 @@ from bin.air_settings import file_settings
 
 class AirCollect:
 
-    def __init__(self, logging_object: Any, home_path: str, api_key: str, location_lat_long: str,
+    def __init__(self, logging_object: Any, api_key: str, location_lat_long: str,
                  query_interval: int, trim_interval: int, num_of_readings: int):
-        self.home_path: str = home_path
         self.logger: Any = logging_object.getLogger(type(self).__name__)
         self.logger.setLevel(logging.INFO)
 
@@ -56,8 +54,9 @@ class AirCollect:
         else:
             return datetime.fromtimestamp(unix_time).strftime('%m/%d %H:%M')
 
-    def get_full_file_path(self, relative_file_path: str) -> str:
-        return os.path.join(self.home_path, relative_file_path)
+    @staticmethod
+    def get_full_file_path(relative_file_path: str) -> str:
+        return os.path.abspath(f'data/{relative_file_path}')
 
     @staticmethod
     def transform_to_inhg_pressure(mbar_pressure: float) -> float:
@@ -113,24 +112,28 @@ class AirCollect:
     def trim_data(self) -> NoReturn:
         # check if data file has reach the configured live data limit
         self.logger.debug('trim data running')
-        with open(self.live_data_file, 'r') as data:
-            num_lines: int = sum(1 for line in data)
 
-        if num_lines - 1 > self.num_of_live_readings:
-            with open(self.live_data_file, 'r') as infile:
-                lines: List[str] = infile.readlines()
+        try:
+            with open(self.live_data_file, 'r') as data:
+                num_lines: int = sum(1 for line in data)
 
-            with open(self.live_data_file, 'w') as outfile:
-                for pos, line in enumerate(lines):
-                    if pos != 1:
-                        outfile.write(line)
+            if num_lines - 1 > self.num_of_live_readings:
+                with open(self.live_data_file, 'r') as infile:
+                    lines: List[str] = infile.readlines()
 
-            self.process_live_data_diffs()
+                with open(self.live_data_file, 'w') as outfile:
+                    for pos, line in enumerate(lines):
+                        if pos != 1:
+                            outfile.write(line)
+
+                self.process_live_data_diffs()
+        except FileNotFoundError as file_not_found:
+            self.logger.error(f'trim_data found no file to trim: {file_not_found}')
+            exit()
 
 
 if __name__ == '__main__':
-    HOME_PATH: str = ntpath.dirname(__file__)
-    logging.config.fileConfig(fname=os.path.join(HOME_PATH, 'bin/logging.conf'), disable_existing_loggers=False)
+    logging.config.fileConfig(fname=os.path.abspath('air_collect/bin/logging.conf'), disable_existing_loggers=False)
     logger: Any = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
@@ -145,7 +148,6 @@ if __name__ == '__main__':
         print('\nBarometric data collector will run every {} seconds for coordinates {}:'.format(QUERY_API_INTERVAL,
                                                                                                  COORDINATES_LAT_LONG))
         air_collect = AirCollect(logging,
-                                 HOME_PATH,
                                  DARK_SKY_API_KEY,
                                  COORDINATES_LAT_LONG,
                                  QUERY_API_INTERVAL,
