@@ -1,135 +1,72 @@
 # Air properties collector
 
-import requests
-import json
 import os
 import sys
 import logging.config
-import numpy as np
-import pandas as pd
+from apscheduler.schedulers.blocking import BlockingScheduler
 from typing import Any, NoReturn, List
 from dotenv import load_dotenv
-from datetime import datetime
-from apscheduler.schedulers.blocking import BlockingScheduler
-from bin.air_settings import file_settings
+from datetime import datetime, timedelta
+from bin.air_settings import file_settings, UNITS
+from bin.api_payloads import current_readings_payload, five_day_report_payload
+from bin.data_source import DataSource
+from bin.file_handler import FileHandler
+from bin.air import Air
 
 
 class AirCollect:
-
-    def __init__(self, logging_object: Any, api_key: str, location_lat_long: str,
-                 query_interval: int, trim_interval: int, num_of_readings: int):
+    def __init__(self, logging_object: Any, api_key: str, location_lat_long: List[float],
+                 query_interval: int, trim_interval: int, num_of_readings: int) -> NoReturn:
         self.logger: Any = logging_object.getLogger(type(self).__name__)
         self.logger.setLevel(logging.INFO)
 
-        self.live_data_file: str = self.get_full_file_path(file_settings['live_data']['data_file'])
-        self.next_48_hours_data_file: str = self.get_full_file_path(file_settings['next_48_hours']['data_file'])
-        self.next_7_days_data_file: str = self.get_full_file_path(file_settings['next_7_days']['data_file'])
+        self.live_data_file: str = FileHandler.get_full_file_path(file_settings['live_data']['data_file'])
+        self.next_days_data_file: str = FileHandler.get_full_file_path(file_settings['next_days']['data_file'])
 
-        self.live_data_diff_file: str = self.get_full_file_path(file_settings['live_data']['diff_file'])
-        self.live_data_2nd_order_diff_file: str = self.get_full_file_path(file_settings['live_data']['diff2_file'])
-        self.next_48_hours_data_diff_file: str = self.get_full_file_path(file_settings['next_48_hours']['diff_file'])
-        self.next_7_days_data_diff_file: str = self.get_full_file_path(file_settings['next_7_days']['diff_file'])
-
-        self.dark_sky_api_url: str = 'https://api.darksky.net/forecast/{}/{}'.format(api_key, location_lat_long)
+        self.api_key = api_key
+        self.lat_long = location_lat_long
         self.query_api_interval: int = query_interval
         self.trim_date_interval: int = trim_interval
         self.num_of_live_readings: int = num_of_readings
 
     def run_metronome(self) -> NoReturn:
         try:
+            start_time = '2020-10-10 03:00:00'
+            self.get_current_data()
+            self.get_daily_data()
             scheduler: BlockingScheduler = BlockingScheduler()
-            scheduler.add_job(self.query_dark_sky_api, 'interval', seconds=self.query_api_interval)
-            scheduler.add_job(self.trim_data, 'interval', seconds=self.trim_date_interval)
+            scheduler.add_job(self.get_current_data, 'interval', start_date=start_time, seconds=self.query_api_interval)
+            scheduler.add_job(self.get_daily_data, 'cron', day_of_week='*', hour=3, minute='0')
+            scheduler.add_job(FileHandler.trim_data, 'interval',
+                              args=[self.logger, self.live_data_file, self.num_of_live_readings],
+                              seconds=self.trim_date_interval)
             scheduler.start()
         except KeyboardInterrupt:
             self.logger.warning('Received a KeyboardInterrupt... exiting process')
             sys.exit()
 
-    @staticmethod
-    def standard_time(unix_time: int, time_type: str) -> str:
-        if time_type == 'daily':
-            return datetime.fromtimestamp(unix_time).strftime('%m/%d')
-        elif time_type == 'hourly':
-            return datetime.fromtimestamp(unix_time).strftime('%d-%H')
-        else:
-            return datetime.fromtimestamp(unix_time).strftime('%m/%d %H:%M')
+    def get_current_data(self) -> NoReturn:
+        data: dict = DataSource.query_climate_cell_api_timelines(self.logger, self.api_key,
+                                                                 self.lat_long, current_readings_payload)
+        if data:
+            air_obj = Air(UNITS, data[0]['values'], data[0]['startTime'])
+            self.logger.info(f'{air_obj}')
+            FileHandler.write_data_append(f'{air_obj.data_to_csv_string()}', self.live_data_file)
 
-    @staticmethod
-    def get_full_file_path(relative_file_path: str) -> str:
-        return os.path.abspath(f'data/{relative_file_path}')
-
-    @staticmethod
-    def transform_to_inhg_pressure(mbar_pressure: float) -> float:
-        return round(mbar_pressure * 0.029530, 4)
-
-    def delta(self, api_data: List[dict]) -> List[float]:
-        pressure_array: List[float] = []
-        for tuple_data in api_data:
-            pressure_array.append(self.transform_to_inhg_pressure(tuple_data.get('pressure')))
-        return np.round(np.diff(pressure_array), 4)
-
-    @staticmethod
-    def write_diff(diff_array: List[float], file_name: str):
-        with open(file_name, 'w') as diffData:
-            diffData.write('Pressure Delta,Time Interval\n')
-            for pos, diff in enumerate(diff_array):
-                diffData.write('%s,%s\n' % (diff, pos))
-
-    @staticmethod
-    def write_live_data(obj_logger: Any, pressure: float, current_time: str, file_name: str):
-        obj_logger.info(f'{pressure} inHg')
-        with open(file_name, 'a') as liveData:
-            liveData.write('%s,%s\n' % (pressure, current_time))
-
-    def write_next_data(self, next_api_data: List[dict], file_name: str, time_type: str):
-        with open(file_name, 'w') as nextData:
-            nextData.write('Pressure,Time\n')
-            for timeInterval in next_api_data:
-                nextData.write('%s,%s\n' % (
-                    self.transform_to_inhg_pressure(timeInterval.get('pressure')),
-                    self.standard_time(timeInterval.get('time'), time_type)))
-
-    def process_live_data_diffs(self) -> NoReturn:
-        data: dict = pd.read_csv(self.live_data_file)
-        self.write_diff(np.round(np.diff(data['Pressure']), 4), self.live_data_diff_file)
-        self.write_diff(np.round(np.diff(data['Pressure'], n=2), 4), self.live_data_2nd_order_diff_file)
-
-    def query_dark_sky_api(self) -> NoReturn:
-        response: Any = requests.get(self.dark_sky_api_url)
-        if response:
-            weather: dict = json.loads(response.text)
-            currently: dict = weather.get('currently')
-            self.write_live_data(self.logger, self.transform_to_inhg_pressure(currently.get('pressure')),
-                                 self.standard_time(currently.get('time'), 'live'), self.live_data_file)
-            self.write_next_data(weather.get('hourly').get('data'), self.next_48_hours_data_file, 'hourly')
-            self.write_next_data(weather.get('daily').get('data'), self.next_7_days_data_file, 'daily')
-            self.write_diff(self.delta(weather.get('hourly').get('data')), self.next_48_hours_data_diff_file)
-            self.write_diff(self.delta(weather.get('daily').get('data')), self.next_7_days_data_diff_file)
-            self.process_live_data_diffs()
-        else:
-            self.logger.error(f'API Status code: {response.status_code}')
-
-    def trim_data(self) -> NoReturn:
-        # check if data file has reach the configured live data limit
-        self.logger.debug('trim data running')
-
-        try:
-            with open(self.live_data_file, 'r') as data:
-                num_lines: int = sum(1 for line in data)
-
-            if num_lines - 1 > self.num_of_live_readings:
-                with open(self.live_data_file, 'r') as infile:
-                    lines: List[str] = infile.readlines()
-
-                with open(self.live_data_file, 'w') as outfile:
-                    for pos, line in enumerate(lines):
-                        if pos != 1:
-                            outfile.write(line)
-
-                self.process_live_data_diffs()
-        except FileNotFoundError as file_not_found:
-            self.logger.error(f'trim_data found no file to trim: {file_not_found}')
-            exit()
+    def get_daily_data(self) -> NoReturn:
+        start_time = datetime.now().replace(microsecond=0)
+        end_time = start_time + timedelta(days=4)
+        five_day_report_payload['startTime'] = f'{start_time.isoformat()}Z'
+        five_day_report_payload['endTime'] = f'{end_time.isoformat()}Z'
+        data: dict = DataSource.query_climate_cell_api_timelines(self.logger, self.api_key,
+                                                                 self.lat_long, five_day_report_payload)
+        if data:
+            open(self.next_days_data_file, 'w').close()
+            FileHandler.write_data_append(Air(UNITS).data_key_order(), self.next_days_data_file)
+            for day in data:
+                air_obj = Air(UNITS, day['values'], day['startTime'])
+                self.logger.info(f'{air_obj}')
+                FileHandler.write_data_append(f'{air_obj.data_to_csv_string()}', self.next_days_data_file)
 
 
 if __name__ == '__main__':
@@ -139,21 +76,19 @@ if __name__ == '__main__':
 
     try:
         load_dotenv()
-        DARK_SKY_API_KEY: str = os.getenv('DARK_SKY_API_KEY')
+        CLIMATE_CELL_API_KEY: str = os.getenv('CLIMATE_CELL_API_KEY')
         QUERY_API_INTERVAL: int = int(os.getenv('QUERY_API_INTERVAL'))
         TRIM_DATA_INTERVAL: int = int(QUERY_API_INTERVAL / 3)
         NUM_OF_LIVE_READINGS: int = int(os.getenv('NUM_OF_LIVE_READINGS'))
-        COORDINATES_LAT_LONG: str = os.getenv('COORDINATES_LAT_LONG')
+        COORDINATE_LAT: float = float(os.getenv('COORDINATE_LAT'))
+        COORDINATE_LONG: float = float(os.getenv('COORDINATE_LONG'))
+        COORDINATES_LAT_LONG = [COORDINATE_LAT, COORDINATE_LONG]
 
-        print('\nBarometric data collector will run every {} seconds for coordinates {}:'.format(QUERY_API_INTERVAL,
-                                                                                                 COORDINATES_LAT_LONG))
-        air_collect = AirCollect(logging,
-                                 DARK_SKY_API_KEY,
-                                 COORDINATES_LAT_LONG,
-                                 QUERY_API_INTERVAL,
-                                 TRIM_DATA_INTERVAL,
-                                 NUM_OF_LIVE_READINGS)
+        print(f'\nBarometric data collector will run every {QUERY_API_INTERVAL} seconds for '
+              f'coordinates {COORDINATES_LAT_LONG}:')
+        air_collect = AirCollect(logging, CLIMATE_CELL_API_KEY, COORDINATES_LAT_LONG, QUERY_API_INTERVAL,
+                                 TRIM_DATA_INTERVAL, NUM_OF_LIVE_READINGS)
         air_collect.run_metronome()
-    except TypeError:
-        logger.error('Received TypeError: Check that the .env project file is configured correctly')
+    except TypeError as type_error:
+        logger.error(f'Received TypeError: Check that the .env project file is configured correctly: {type_error}')
         exit()

@@ -1,1 +1,1 @@
-Pressure,Time
+date,temperature,temperatureApparent,moonPhase,humidity,dewPoint,weatherCode,precipitationProbability,precipitationType,pressureSurfaceLevel,epaIndex,epaHealthConcern,epaPrimaryPollutant,particulateMatter10,particulateMatter25,pollutantCO,pollutantNO2,pollutantO3,pollutantSO2,grassIndex,treeIndex,weedIndex
