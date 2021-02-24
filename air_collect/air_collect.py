@@ -1,5 +1,4 @@
 # Air properties collector
-
 import os
 import sys
 import logging.config
@@ -7,11 +6,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from typing import Any, NoReturn, List
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from bin.air_settings import file_settings, UNITS
+from air_core.air_settings import file_settings, UNITS
+from air_core.air import Air
 from bin.api_payloads import current_readings_payload, five_day_report_payload
 from bin.data_source import DataSource
 from bin.file_handler import FileHandler
-from bin.air import Air
 
 
 class AirCollect:

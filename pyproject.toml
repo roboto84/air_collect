@@ -10,6 +10,7 @@ python = '^3.8'
 requests = '^2.25.0'
 python-dotenv = '^0.15.0'
 APScheduler = '^3.6.3'
+air-core = {git = "https://github.com/roboto84/air_core.git", rev = "develop"}
 
 [tool.poetry.dev-dependencies]
 pytest = '^5.2'
