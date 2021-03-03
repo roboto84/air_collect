@@ -35,7 +35,7 @@ class AirCollect:
             self.get_daily_data()
             scheduler: BlockingScheduler = BlockingScheduler()
             scheduler.add_job(self.get_current_data, 'interval', start_date=start_time, seconds=self.query_api_interval)
-            scheduler.add_job(self.get_daily_data, 'cron', day_of_week='*', hour=3, minute='0')
+            scheduler.add_job(self.get_daily_data, 'cron', day_of_week='*', hour=0, minute='5')
             scheduler.add_job(FileHandler.trim_data, 'interval',
                               args=[self.logger, self.live_data_file, self.num_of_live_readings],
                               seconds=self.trim_date_interval)
