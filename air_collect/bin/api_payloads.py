@@ -1,6 +1,6 @@
 #  Payloads for Climacell requests
 from typing import List
-from air_core.air_settings import UNITS, TIMEZONE
+from air_core.library.air_settings import UNITS, TIMEZONE
 
 fields_for_current: List[str] = ['temperature', 'temperatureApparent', 'dewPoint', 'humidity', 'pressureSurfaceLevel',
                                  'precipitationProbability', 'precipitationType', 'weatherCode', 'epaIndex',

@@ -6,8 +6,8 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from typing import Any, NoReturn, List
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from air_core.air_settings import file_settings, UNITS
-from air_core.air import Air
+from air_core.library.air_settings import file_settings, UNITS
+from air_core.library.air import Air
 from bin.api_payloads import current_readings_payload, five_day_report_payload
 from bin.data_source import DataSource
 from bin.file_handler import FileHandler
