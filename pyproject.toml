@@ -1,7 +1,7 @@
 [tool.poetry]
 name = 'air_collect'
 version = '1.0.0'
-description = 'Local barometric pressure data collector using the ClimaCell API'
+description = 'Local weather data collector using the ClimaCell API'
 authors = ['roboto84 <7658704+roboto84@users.noreply.github.com>']
 license = 'GPL-3.0-or-later'
 
@@ -10,7 +10,7 @@ python = '^3.8'
 requests = '^2.25.0'
 python-dotenv = '^0.15.0'
 APScheduler = '^3.6.3'
-air-core = {git = "https://github.com/roboto84/air_core.git", branch = "develop"}
+air-core = {git = 'https://github.com/roboto84/air_core.git', rev = '432f76fe'}
 
 [tool.poetry.dev-dependencies]
 pytest = '^5.2'
