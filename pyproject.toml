@@ -1,7 +1,7 @@
 [tool.poetry]
 name = 'air_collect'
 version = '1.0.0'
-description = 'Local weather data collector using the ClimaCell API'
+description = 'Local weather data collector using the Tomorrow.io Weather API'
 authors = ['roboto84 <7658704+roboto84@users.noreply.github.com>']
 license = 'GPL-3.0-or-later'
 
