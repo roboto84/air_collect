@@ -11,8 +11,8 @@ from air_core.library.air_settings import file_settings, UNITS
 from air_core.library.air import Air
 from bin.api_payloads import current_readings_payload, five_day_report_payload
 from bin.data_source import DataSource
-from bin.file_handler import FileHandler
-from bin.db.air_db import AirDb
+from willow_core.library.file_handler import FileHandler
+from air_core.library.air_db import AirDb
 
 
 class AirCollect:
@@ -20,8 +20,8 @@ class AirCollect:
                  query_interval: int, trim_interval: int, num_of_readings: int, sql_lite_db_path: str):
         self._logger: logging.Logger = logging_object.getLogger(type(self).__name__)
         self._logger.setLevel(logging.INFO)
-        self._live_data_file: str = FileHandler.get_full_file_path(file_settings['live_data']['data_file'])
-        self._forecast_data_file: str = FileHandler.get_full_file_path(file_settings['next_days']['data_file'])
+        self._live_data_file: str = FileHandler.add_project_path(f"data/{file_settings['live_data']['data_file']}")
+        self._forecast_data_file: str = FileHandler.add_project_path(f"data/{file_settings['next_days']['data_file']}")
         self._air_db: AirDb = AirDb(logging_object, sql_lite_db_path)
         self._api_key: str = api_key
         self._lat_long: tuple[float, float] = location_lat_long
