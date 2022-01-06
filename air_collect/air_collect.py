@@ -3,16 +3,15 @@ import os
 import sys
 import logging.config
 from apscheduler.schedulers.blocking import BlockingScheduler
-from air_core.library.air_settings import TIMEZONE
 from typing import Any
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from air_core.library.air_settings import file_settings, UNITS
+from air_core.library.air_settings import file_settings, UNITS, TIMEZONE
 from air_core.library.air import Air
+from air_core.library.air_db import AirDb
 from bin.api_payloads import current_readings_payload, five_day_report_payload
 from bin.data_source import DataSource
 from willow_core.library.file_handler import FileHandler
-from air_core.library.air_db import AirDb
 
 
 class AirCollect:
