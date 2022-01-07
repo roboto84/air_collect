@@ -80,13 +80,13 @@ class AirCollect:
                                                    self._lat_long,
                                                    five_day_report_payload)
         if data:
-            self._air_db.clear_location_forecast_weather(self._lat_long)
+            self._air_db.clear_location_weather_forecast(self._lat_long)
             FileHandler.clear_file(self._logger, self._forecast_data_file)
             FileHandler.append_line_to_file(self._logger, Air(UNITS).data_key_order(), self._forecast_data_file)
             for day in data:
                 air_obj: Air = Air(UNITS, day['values'], day['startTime'])
                 self._logger.info(f'{air_obj}')
-                self._air_db.insert_forecast_weather(self._lat_long, air_obj)
+                self._air_db.insert_weather_forecast(self._lat_long, air_obj)
                 FileHandler.append_line_to_file(self._logger, f'{air_obj.data_to_csv_string()}',
                                                 self._forecast_data_file)
 
