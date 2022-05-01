@@ -9,7 +9,7 @@ class DataSource:
     @staticmethod
     def query_tomorrow_api(logger: Any, api_key: str, lat_long: tuple[float, float], payload: dict) -> dict:
         try:
-            url = 'https://data.climacell.co/v4/timelines'
+            url = 'https://api.tomorrow.io/v4/timelines'
             querystring = {'apikey': api_key}
             payload = payload
             payload['location']: list[float] = [lat_long[0], lat_long[1]]
