@@ -1,5 +1,6 @@
 #  Payloads for Climacell requests
 from typing import List
+from air_core.library.types.types import Unit
 from air_core.library.air_settings import UNITS, TIMEZONE
 
 fields_for_current: List[str] = ['temperature', 'temperatureApparent', 'dewPoint', 'humidity', 'pressureSurfaceLevel',
@@ -10,11 +11,12 @@ fields_for_current: List[str] = ['temperature', 'temperatureApparent', 'dewPoint
 
 fields_for_five_day: List[str] = fields_for_current.copy()
 fields_for_five_day.append('moonPhase')
+request_units: str = 'imperial' if UNITS == Unit.imperial else 'metric'
 
 current_readings_payload = {
     'fields': fields_for_current,
     'timesteps': ['current'],
-    'units': UNITS,
+    'units': request_units,
     'location': [],
     'timezone': TIMEZONE
 }
@@ -22,7 +24,7 @@ current_readings_payload = {
 five_day_report_payload = {
     'fields': fields_for_five_day,
     'timesteps': ['1d'],
-    'units': UNITS,
+    'units': request_units,
     'location': [],
     'timezone': TIMEZONE,
     'startTime': '',
