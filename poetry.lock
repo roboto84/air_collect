@@ -13,8 +13,8 @@ willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '59d8f
 [package.source]
 type = "git"
 url = 'https://github.com/roboto84/air_core.git'
-reference = '5c8634b'
-resolved_reference = "5c8634bd8c3ff52bd5240b46332b2a0a84da106e"
+reference = '0a46bfd'
+resolved_reference = "0a46bfd4897c626d63ae1333b2b17af7e5b6d39c"
 
 [[package]]
 name = "apscheduler"
@@ -289,7 +289,7 @@ resolved_reference = "59d8f44bce1bbda74e6e6d82a179a78f36cdfb3c"
 [metadata]
 lock-version = "1.1"
 python-versions = '^3.9'
-content-hash = "8efe07992cb36878836052eb5437261bc15a4db20d66d2b3258683a4859dff41"
+content-hash = "8eb3e5003dae8c1b8c2d03548590b6032d1d38b7e481bcbdf9cbf2cb9f561c3a"
 
 [metadata.files]
 air-core = []
