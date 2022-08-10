@@ -10,8 +10,8 @@ python = '^3.9'
 requests = '^2.25.0'
 python-dotenv = '^0.15.0'
 APScheduler = '^3.6.3'
-air-core = {git = 'https://github.com/roboto84/air_core.git', rev = '52bbd4a'}
-willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '59d8f44'}
+air-core = {git = 'https://github.com/roboto84/air_core.git', rev = 'b4e50fb'}
+willow-core = {git = 'https://github.com/roboto84/willow_core.git', rev = '646a99f'}
 
 [tool.poetry.dev-dependencies]
 pytest = '^5.2'
