@@ -1,91 +1,108 @@
 <h1 align="center">air_collect</h1>
 
 <div align="center">
-	<img src="assets/air_2.png" width="150">
+	<img src="assets/air_collect.png" width="250" title="air logo">
 </div>
 
 ## About
-`air_collect` is a simple weather data collector for a single location. The collector stores weather information, using 
-the Tomorrow.io Weather API, for a given time interval into a CSV file `liveData.csv` and an SQLite DB of choice.  It 
-also updates a 3-day forecast daily into a CSV file `forecastData.csv` and the same SQLite DB.
+`air_collect` is a simple weather data collector.
+
+Utilizing the [Tomorrow.io Weather API](https://docs.tomorrow.io/reference/welcome), `air_collect` gathers both live and forcasted weather data at specified intervals.
+
+## Install
+To see `air_collect` used with **Air** on the `roboto_ui` go to the [roboto](https://github.com/roboto84/roboto) repo and follow its README.
 
 <div align="center">
-	<img src="assets/ScreenshotAirCollect.png">
+    <img src="assets/air_collect_1.png" title="Air UI - dark mode">
+    <br/>
+    Air UI on Roboto - dark mode
+    <br/><br/>
+    <img src="assets/air_collect_2.png" title="Air UI - light mode">
+    <br/>
+    Air UI on Roboto - light mode
+    <br/><br/>
+    <img src="assets/air_collect_3.png" title="Air pressure graph">
+    <br/>
+    Line graph showing barometric pressure changes over a 2 week interval
+    <br/><br/>
+    <img src="assets/air_collect_4.png" title="Air temperature graph">
+    <br/>
+    Line graph showing temperature changes over a 2 week interval
+    <br/><br/>
+    <img src="assets/air_collect_5.png" title="Air table">
+    <br/>
+    Hourly weather displayed in a sortable table
+    <br/><br/>
 </div>
 
-## Installation
-This project is managed with [Python Poetry](https://github.com/python-poetry/poetry). With Poetry installed correctly,
-simply clone this project and run:
 
-```commandline
-poetry install
-```
+However, if you would like to run `air_collect` outside of `roboto` follow these instructions:
 
-To test the project, run:
+This project is managed with [Poetry](https://github.com/python-poetry/poetry). With Poetry installed, simply clone this project and install its dependencies:
 
-```commandline
-poetry run pytest
-```
+- Clone repo
+    ```
+    git clone https://github.com/roboto84/air_collect.git
+    ```
+    ```
+    cd air_collect
+    ```
+- Install dependencies
+    ```
+    poetry install
+    ```
 
-In order to run the program correctly, see below.
+## API Key
+`air_collect` requires that you have an API key for [Tomorrow.io](https://docs.tomorrow.io/reference/welcome).
 
-## Introduction
-This project functions as part of the larger air project. This particular repository's purpose is
-to collect the weather data of a location using the Tomorrow.io Weather API.
+Once you have obtained your API key, you can continue to setting up environmental variables.
 
-### air_collect.py
-`air_collect.py` is the process in charge of running continuously, polling the Tomorrow.io
-Weather API for weather data. It takes the measurements collected from the API requests outputting them out to
-the terminal/logs, and aggregating them in the project's data folder as a collection of CSVs and into an SQLite DB.
-This process creates a data file of live weather data readings `liveData.csv`, along with a data file for a 3 day
-forecast `forecastData.csv`. 
+## Environmental Variables
+- You must create a `.env` file with the following environmental variables set:
+    - `CLIMATE_CELL_API_KEY` : The API key of a registered [Tomorrow.io](https://www.tomorrow.io) Weather API account.
+    - `QUERY_API_INTERVAL` : The amount of seconds to wait before querying the API, i.e. polling interval.
+    - `NUM_OF_LIVE_READINGS` : The max number of weather data rows the live data file should hold at any given time. New values continue to be collected indefinitely as long as air_collect.py is run, but the oldest value is consistently truncated to stay within this predefined limit. This does not impact the SQLite DB, as it collects all readings without limits.
+    - `COORDINATE_LONG` : The location's geographic coordinate system longitude.
+    - `COORDINATE_LAT` : The location's geographic coordinate system latitude.
+    - `SQL_LITE_DB` : File path to SQLite database file (existing or non-existing).
 
-The SQLite DB file is placed in the given environmental variable path. `air_collect.py`
-requires that an `.env` file is available in the *same* directory it is running under. The format of the .env file
-should contain ``CLIMATE_CELL_API_KEY``, `QUERY_API_INTERVAL`, `NUM_OF_LIVE_READINGS`, `COORDINATE_LAT`,
-`COORDINATE_LONG` and `SQL_LITE_DB` as defined environment values as shown below:
 
-- `CLIMATE_CELL_API_KEY` : The API key of a registered [Tomorrow.io](https://www.tomorrow.io) Weather API account
-- `QUERY_API_INTERVAL` : The amount of seconds to wait before querying the API, i.e. polling interval
-- `NUM_OF_LIVE_READINGS` : The max number of weather data rows the live data file should hold at any given time. New values continue to be collected indefinitely as long as air_collect.py is run, but the oldest value is consistently truncated to stay within this predefined limit. This does not impact the SQLite DB, as it collects all readings without limits.
-- `COORDINATE_LONG` : The location's geographic coordinate system longitude
-- `COORDINATE_LAT` : The location's geographic coordinate system latitude
-- `SQL_LITE_DB` : File path to SQLite DB file (existing or non-existing)
+- An explained `.env` file format is shown below:
+    ```
+    CLIMATE_CELL_API_KEY=<your Tomorrow.io Weather API key>
+    QUERY_API_INTERVAL=<number of seconds between API requests>
+    NUM_OF_LIVE_READINGS=<number of readings in the live csv file>
+    COORDINATE_LAT=<latitude coordinate>
+    COORDINATE_LONG=<longitude coordinate>
+    SQL_LITE_DB=<path to SQLite db file>
+    ```
 
-An explained `.env` file format is shown below:
+- A typical `.env` file may look like this:
+    ```
+    CLIMATE_CELL_API_KEY=gIODELdkqdPDaaLEL1PWOEfQdfAaaeFPq
+    QUERY_API_INTERVAL=3600
+    NUM_OF_LIVE_READINGS=168
+    COORDINATE_LAT=40.71427
+    COORDINATE_LONG=-74.00597
+    SQL_LITE_DB=/home/white/db/air_db
+    ```
 
-```commandline
-CLIMATE_CELL_API_KEY=<your Tomorrow.io Weather API key>
-QUERY_API_INTERVAL=<number of seconds between API requests>
-NUM_OF_LIVE_READINGS=<number of readings in the live csv file>
-COORDINATES_LAT=<'latitude coordinate>
-COORDINATE_LONG=<longitude coordinate>
-SQL_LITE_DB=<path to SQLite db file>
-```
+## Usage
+- Run the collector script once the environment file `.env` is created:
+    ```
+    poetry run python air_collect/air_collect.py
+    ```
 
-A typical `.env` file may look like this:
-
-```commandline
-CLIMATE_CELL_API_KEY=<your Tomorrow.io Weather API key>
-QUERY_API_INTERVAL=3600
-NUM_OF_LIVE_READINGS=168
-COORDINATES_LAT=40.71427
-COORDINATE_LONG=-74.00597
-SQL_LITE_DB=/home/white/db/air_db
-```
-
-To run the script once the environment file `.env` is created, from within the root air_collect
-directory, simply type:
-
-```commandline
-poetry run python air_collect/air_collect.py
-```
+<div align="center">
+	<img src="assets/air_collect_6.png" title="air_collect">
+    <br/>
+    air_collect running
+</div>
 
 ## Data
-This data collecting process collects the following data points in the CSV files described above
-(`liveData.csv`, `forecastData.csv`) and in the SQLite DB:
+This data collecting process collects the following data points in the CSV files described above (`liveData.csv`, `forecastData.csv`) and in the SQLite DB:
 
-```commandline
+```
 latitude FLOAT
 longitude FLOAT
 date TEXT
@@ -117,8 +134,7 @@ Process logs are generated in the project's root directory's log folder with the
 existing in the bin folder.
 
 ## Commit Conventions
-Git commits follow [Conventional Commits](https://www.conventionalcommits.org) message style as
-explained in detail on their website.
+Git commits follow [Conventional Commits](https://www.conventionalcommits.org) message style as explained in detail on their website.
 
 <br/>
 <sup>
