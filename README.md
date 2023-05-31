@@ -7,19 +7,19 @@
 ## About
 `air_collect` is a simple weather data collector.
 
-Utilizing the [Tomorrow.io Weather API](https://docs.tomorrow.io/reference/welcome), `air_collect` gathers both live and forcasted weather data at specified intervals.
+Utilizing the [Tomorrow.io Weather API](https://docs.tomorrow.io/reference/welcome), `air_collect` gathers both live weather data at specified intervals and forecasted weather data.
 
 ## Install
-To see `air_collect` used with **Air** on the `roboto_ui` go to the [roboto](https://github.com/roboto84/roboto) repo and follow its README.
+To see `air_collect` used with **Air** on the `bind_ui` go to the [Bind](https://github.com/roboto84/bind) repo and follow its README.
 
 <div align="center">
     <img src="assets/air_collect_1.png" title="Air UI - dark mode">
     <br/>
-    Air UI on Roboto - dark mode
+    Air UI on Bind - dark mode
     <br/><br/>
     <img src="assets/air_collect_2.png" title="Air UI - light mode">
     <br/>
-    Air UI on Roboto - light mode
+    Air UI on Bind - light mode
     <br/><br/>
     <img src="assets/air_collect_3.png" title="Air pressure graph">
     <br/>
@@ -36,7 +36,7 @@ To see `air_collect` used with **Air** on the `roboto_ui` go to the [roboto](htt
 </div>
 
 
-However, if you would like to run `air_collect` outside of `roboto` follow these instructions:
+However, if you would like to run `air_collect` outside of `bind` follow these instructions:
 
 This project is managed with [Poetry](https://github.com/python-poetry/poetry). With Poetry installed, simply clone this project and install its dependencies:
 
